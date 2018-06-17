@@ -1,0 +1,47 @@
+#usage "en: This ULP prompts you for an attribute name and will delete that attribute from all parts in the schematic.<br>"
+"Usage: RUN attribute_delete.ulp<br>"
+"Author: Scott Swaaley<br>"
+
+// Definitions:
+
+string cmds,result,att_name;
+
+int Number,dlgResult;
+
+// variable initialization
+att_name = "";
+
+dlgResult = 0;
+
+// prompt user with a dialog box to get attribute name
+dlgResult = dlgDialog("Attribute Deletion") {
+	dlgLabel("Enter Attribute Name");
+	dlgStringEdit(att_name);
+	dlgPushButton("Delete All Attributes of That Name") dlgAccept(1);
+};
+if (dlgResult == 0) exit (0);
+
+// run through every attribute of every part
+// if a matching attribute name is found, create a delete command and add it to the list of commands
+schematic(S)
+{
+	S.parts(P)
+	{
+				  
+		P.attributes(a) {
+			if(a.name == att_name) {
+				cmds+="attribute " + P.name + " " + att_name + " delete;";
+				Number++;
+			}
+			
+		}
+
+	}
+	// prompt user with matching results and ask for confirmation
+	sprintf(result,"%d Attributes Will Be Deleted!",Number);
+	if (dlgMessageBox(result, "Do It!", "Never Mind") == 0) {
+		// exit and run commands!
+		exit(cmds);
+	}
+}
+
